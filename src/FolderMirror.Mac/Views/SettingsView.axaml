@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FolderMirror.Mac.ViewModels"
+             x:Class="FolderMirror.Mac.Views.SettingsView">
+    <ScrollViewer>
+        <StackPanel Margin="36,30" Spacing="16" MaxWidth="860" HorizontalAlignment="Left">
+            <TextBlock Text="Settings" Classes="title"/>
+
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="General" Classes="section"/>
+                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="Confirm before starting a synchronization" VerticalAlignment="Center"/><ToggleSwitch Grid.Column="1" IsChecked="{Binding ConfirmBeforeSync}" OnContent="" OffContent=""/></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="Show notifications when a synchronization finishes or fails" VerticalAlignment="Center"/><ToggleSwitch Grid.Column="1" IsChecked="{Binding ShowNotifications}" OnContent="" OffContent=""/></Grid>
+                    <Grid ColumnDefinitions="*,Auto"><TextBlock Text="Dark theme" VerticalAlignment="Center"/><ToggleSwitch Grid.Column="1" IsChecked="{Binding DarkTheme}" OnContent="" OffContent=""/></Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <StackPanel>
+                        <TextBlock Text="Synchronization defaults" Classes="section" Margin="0,0,0,2"/>
+                        <TextBlock Text="Used when you create a new profile. Existing profiles keep their own settings." Classes="dim" FontSize="12"/>
+                    </StackPanel>
+                    <Grid ColumnDefinitions="*,260"><TextBlock Text="Synchronization mode" VerticalAlignment="Center"/><ComboBox Grid.Column="1" ItemsSource="{x:Static vm:SettingsViewModel.Modes}" SelectedItem="{Binding DefaultMode}" HorizontalAlignment="Stretch"/></Grid>
+                    <Grid ColumnDefinitions="*,120">
+                        <StackPanel><TextBlock Text="Maximum parallel file operations"/><TextBlock Text="Use 1–2 for external drives and network shares, 4–8 for SSDs." Classes="dim" FontSize="12"/></StackPanel>
+                        <ComboBox Grid.Column="1" ItemsSource="{x:Static vm:SettingsViewModel.ParallelOptions}" SelectedItem="{Binding MaxParallel}" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel><TextBlock Text="Verify every copied file (SHA-256)"/><TextBlock Text="Re-reads each copy to prove it matches the source. Safer but slower." Classes="dim" FontSize="12"/></StackPanel>
+                        <ToggleSwitch Grid.Column="1" IsChecked="{Binding VerifyCopies}" OnContent="" OffContent=""/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Logging and data" Classes="section"/>
+                    <Grid ColumnDefinitions="*,200"><TextBlock Text="Log level" VerticalAlignment="Center"/><ComboBox Grid.Column="1" ItemsSource="{x:Static vm:SettingsViewModel.LogLevels}" SelectedItem="{Binding LogLevel}" HorizontalAlignment="Stretch"/></Grid>
+                    <TextBlock Text="{Binding DataFolder}" Classes="dim" FontSize="12" TextWrapping="Wrap"/>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Open data folder" Command="{Binding OpenDataCommand}"/>
+                        <Button Content="Open log folder" Command="{Binding OpenLogsCommand}"/>
+                        <Button Content="Clear logs" Classes="danger" Command="{Binding ClearLogsCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="About Folder Mirror" Classes="section"/>
+                    <TextBlock Text="{Binding Version, StringFormat='Version {0} for macOS'}" FontWeight="SemiBold"/>
+                    <TextBlock Text="Safe folder synchronization: mirror, one-way, two-way and incremental backup, with a mandatory preview, an archive for deleted files and background schedules through launchd." TextWrapping="Wrap" Classes="dim"/>
+                    <Button Content="Project page on GitHub" Command="{Binding OpenRepoCommand}" HorizontalAlignment="Left" Margin="0,6,0,0"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

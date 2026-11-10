@@ -16,6 +16,9 @@ public static class SafetyChecker
             var p = Environment.GetFolderPath(f);
             if (!string.IsNullOrEmpty(p)) yield return PathTools.Normalize(p);
         }
+        if (!OperatingSystem.IsWindows())
+            foreach (var p in new[] { "/System", "/usr", "/bin", "/sbin", "/etc", "/Library", "/Applications", "/private", "/var" })
+                yield return p;
     }
 
     public static List<SafetyIssue> CheckPaths(SyncProfile p, IDiskSpaceProvider? space = null)
@@ -58,7 +61,7 @@ public static class SafetyChecker
 
         // Dangerous destinations
         var dstRoot = PathTools.DriveRoot(dst) ?? "";
-        if (dst.TrimEnd('\\').Equals(dstRoot.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
+        if (dst == dstRoot || dst.TrimEnd('\\', '/').Equals(dstRoot.TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase))
         {
             if (p.Mode == SyncMode.Mirror)
                 Add(IssueSeverity.Error, "MirrorToDriveRoot",

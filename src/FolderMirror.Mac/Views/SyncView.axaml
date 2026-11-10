@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FolderMirror.Mac.ViewModels"
+             x:Class="FolderMirror.Mac.Views.SyncView">
+    <DockPanel Margin="36,30,36,24">
+        <TextBlock DockPanel.Dock="Top" Text="Synchronize" Classes="title"/>
+
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="320,*,Auto,Auto" Margin="0,16,0,6">
+            <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" HorizontalAlignment="Stretch" PlaceholderText="Choose a profile">
+                <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Grid.Column="1" Text="{Binding ModeText}" Classes="dim" Margin="14,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+            <Button Grid.Column="2" Content="Analyze (preview)" Command="{Binding AnalyzeCommand}" Margin="0,0,8,0"/>
+            <Button Grid.Column="3" Content="Synchronize now" Classes="accent" Command="{Binding StartCommand}"/>
+        </Grid>
+        <TextBlock DockPanel.Dock="Top" Text="Every synchronization starts with a preview. Nothing is copied or deleted until you press “Synchronize now”." Classes="dim" FontSize="12" Margin="0,0,0,12"/>
+
+        <!-- Run progress -->
+        <Border DockPanel.Dock="Top" Classes="card" Margin="0,0,0,12" IsVisible="{Binding Coordinator.IsRunning}">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding Coordinator.StatusText}" FontWeight="SemiBold"/>
+                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding Coordinator.Fraction}" IsIndeterminate="{Binding Coordinator.IsIndeterminate}"/>
+                    <TextBlock Text="{Binding Coordinator.DetailText}" Classes="dim" FontSize="12"/>
+                    <TextBlock Text="{Binding Coordinator.CurrentFile}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+                <Button Grid.Column="1" Content="Cancel" Classes="danger" Margin="14,0,0,0" VerticalAlignment="Top" Command="{Binding CancelCommand}"/>
+            </Grid>
+        </Border>
+
+        <Border DockPanel.Dock="Top" Classes="card" Margin="0,0,0,12" Padding="14,10" IsVisible="{Binding HasResult}">
+            <TextBlock Text="{Binding Result}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+        </Border>
+
+        <Border DockPanel.Dock="Top" Classes="card" Margin="0,0,0,12" Padding="14,10" IsVisible="{Binding HasPlan}">
+            <StackPanel Spacing="6">
+                <TextBlock Text="{Binding Summary}" FontWeight="SemiBold"/>
+                <ItemsControl ItemsSource="{Binding Issues}">
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding Text}" Foreground="{Binding Brush}" TextWrapping="Wrap" FontSize="12.5"/></DataTemplate></ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="Only the first 5,000 changes are listed here; all of them will be synchronized." Classes="dim" FontSize="12" IsVisible="{Binding Truncated}"/>
+            </StackPanel>
+        </Border>
+
+        <Border Classes="card" Padding="0" IsVisible="{Binding HasPlan}">
+            <DataGrid ItemsSource="{Binding Rows}" IsReadOnly="False" AutoGenerateColumns="False" CanUserResizeColumns="True" GridLinesVisibility="Horizontal" BorderThickness="0">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Action" Width="110" IsReadOnly="True">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate><TextBlock Text="{Binding ActionText}" Foreground="{Binding Brush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0"/></DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="" Binding="{Binding Direction}" Width="34" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="File" Binding="{Binding RelPath}" Width="3*" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Size" Binding="{Binding SizeText}" Width="90" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="2*" IsReadOnly="True"/>
+                    <DataGridTemplateColumn Header="Conflict resolution" Width="190">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox IsVisible="{Binding IsConflict}" ItemsSource="{x:Static vm:SyncViewModel.ResolutionList}" SelectedItem="{Binding Resolution}" Margin="8,2" MinWidth="160"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </DockPanel>
+</UserControl>

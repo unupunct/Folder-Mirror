@@ -1,0 +1,63 @@
+name: macOS
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/**', 'tests/**', 'installer/mac/**', 'scripts/build-mac.sh', '.github/workflows/macos.yml']
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing release tag to attach the .dmg files to (leave empty to only build)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Engine tests on macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet test tests/FolderMirror.Tests --logger "console;verbosity=normal"
+
+  dmg:
+    name: Build .dmg (${{ matrix.rid }})
+    needs: test
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rid: [osx-arm64, osx-x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build app bundle and dmg
+        run: |
+          chmod +x scripts/build-mac.sh
+          scripts/build-mac.sh ${{ matrix.rid }} 1.1.0
+      - name: Smoke test (the packaged app runs headless mode without a .NET install)
+        run: |
+          export FOLDERMIRROR_DATA="$RUNNER_TEMP/fm-data"
+          APP="release/mac/stage-${{ matrix.rid }}/Folder Mirror.app/Contents/MacOS/FolderMirror"
+          # unknown profile id -> exits with code 3 after opening the database
+          set +e
+          DOTNET_ROOT= PATH=/usr/bin:/bin "$APP" --run-profile 00000000-0000-0000-0000-000000000001 --background
+          code=$?
+          echo "exit code: $code"
+          [ "$code" = "3" ]
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FolderMirror-macOS-${{ matrix.rid }}
+          path: release/mac/*.dmg
+      - name: Attach to release
+        if: ${{ github.event.inputs.release_tag != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.inputs.release_tag }}" release/mac/*.dmg --clobber --repo "${{ github.repository }}"

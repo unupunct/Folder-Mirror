@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FolderMirror.Mac.ViewModels"
+        xmlns:v="using:FolderMirror.Mac.Views"
+        x:Class="FolderMirror.Mac.MainWindow"
+        Title="Folder Mirror" Width="1240" Height="780" MinWidth="980" MinHeight="620"
+        Background="{DynamicResource WindowBg}"
+        WindowStartupLocation="CenterScreen">
+    <Grid ColumnDefinitions="230,*">
+        <!-- Sidebar -->
+        <Border Background="{DynamicResource SidebarBg}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="0,0,1,0">
+            <DockPanel Margin="14,22,14,16">
+                <StackPanel DockPanel.Dock="Top" Margin="8,0,0,22" Orientation="Horizontal" Spacing="10">
+                    <Image Source="avares://FolderMirror/Assets/logo.png" Width="34" Height="34"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Folder Mirror" FontSize="17" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Settings.Tagline}" Classes="dim" FontSize="11"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Border DockPanel.Dock="Bottom" Classes="card" Padding="12" Margin="0,10,0,0">
+                    <StackPanel Spacing="6" DataContext="{Binding Coordinator}">
+                        <TextBlock Text="{Binding StatusText}" FontSize="12" TextWrapping="Wrap"/>
+                        <ProgressBar Minimum="0" Maximum="100" Height="6" Value="{Binding Fraction}" IsIndeterminate="{Binding IsIndeterminate}" IsVisible="{Binding IsBusy}"/>
+                        <TextBlock Text="{Binding DetailText}" Classes="dim" FontSize="11" TextWrapping="Wrap" IsVisible="{Binding IsBusy}"/>
+                        <TextBlock Text="{Binding CurrentFile}" Classes="dim" FontSize="11" TextTrimming="CharacterEllipsis" IsVisible="{Binding IsRunning}"/>
+                    </StackPanel>
+                </Border>
+
+                <ListBox Classes="nav" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" Background="Transparent">
+                    <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Title}"/></DataTemplate></ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- Pages -->
+        <ContentControl Grid.Column="1" Content="{Binding Current}">
+            <ContentControl.DataTemplates>
+                <DataTemplate DataType="vm:DashboardViewModel"><v:DashboardView/></DataTemplate>
+                <DataTemplate DataType="vm:ProfilesViewModel"><v:ProfilesView/></DataTemplate>
+                <DataTemplate DataType="vm:SyncViewModel"><v:SyncView/></DataTemplate>
+                <DataTemplate DataType="vm:SchedulesViewModel"><v:SchedulesView/></DataTemplate>
+                <DataTemplate DataType="vm:HistoryViewModel"><v:HistoryView/></DataTemplate>
+                <DataTemplate DataType="vm:SettingsViewModel"><v:SettingsView/></DataTemplate>
+            </ContentControl.DataTemplates>
+        </ContentControl>
+    </Grid>
+</Window>

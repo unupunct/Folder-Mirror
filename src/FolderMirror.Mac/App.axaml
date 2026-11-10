@@ -1,0 +1,46 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FolderMirror.Mac.App"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+
+        <Style Selector="DataGridColumnHeader"><Setter Property="Background" Value="#151B20"/><Setter Property="Foreground" Value="#9AA5AF"/></Style>
+        <Style Selector="TextBlock.title"><Setter Property="FontSize" Value="26"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+        <Style Selector="TextBlock.section"><Setter Property="FontSize" Value="15"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Margin" Value="0,0,0,8"/></Style>
+        <Style Selector="TextBlock.dim"><Setter Property="Opacity" Value="0.62"/></Style>
+        <Style Selector="TextBlock.big"><Setter Property="FontSize" Value="26"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{DynamicResource CardBg}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="18"/>
+        </Style>
+        <Style Selector="Button.accent"><Setter Property="Background" Value="{DynamicResource AccentBrush}"/><Setter Property="Foreground" Value="#07140D"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+        <Style Selector="Button.accent:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="#4BE08A"/><Setter Property="TextElement.Foreground" Value="#07140D"/></Style>
+        <Style Selector="Button.danger"><Setter Property="Foreground" Value="#FF6B6B"/></Style>
+        <Style Selector="ListBox.nav ListBoxItem"><Setter Property="Padding" Value="14,10"/><Setter Property="Margin" Value="0,2"/><Setter Property="CornerRadius" Value="8"/><Setter Property="FontSize" Value="14"/></Style>
+        <Style Selector="ListBox.nav ListBoxItem:selected /template/ ContentPresenter"><Setter Property="Background" Value="#262E27"/><Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/></Style>
+    </Application.Styles>
+
+    <Application.Resources>
+        <Color x:Key="SystemAccentColor">#2ECC71</Color>
+        <Color x:Key="SystemAccentColorLight1">#4BE08A</Color>
+        <Color x:Key="SystemAccentColorLight2">#6CEBA2</Color>
+        <Color x:Key="SystemAccentColorLight3">#93F2BC</Color>
+        <Color x:Key="SystemAccentColorDark1">#26A85C</Color>
+        <Color x:Key="SystemAccentColorDark2">#1F8A4B</Color>
+        <Color x:Key="SystemAccentColorDark3">#186C3B</Color>
+        <SolidColorBrush x:Key="AccentBrush" Color="#2ECC71"/>
+        <SolidColorBrush x:Key="WindowBg" Color="#12161A"/>
+        <SolidColorBrush x:Key="SidebarBg" Color="#0D1013"/>
+        <SolidColorBrush x:Key="CardBg" Color="#1A2026"/>
+        <SolidColorBrush x:Key="CardBorder" Color="#252D35"/>
+        <SolidColorBrush x:Key="NewBrush" Color="#2ECC71"/>
+        <SolidColorBrush x:Key="ModBrush" Color="#4DA3FF"/>
+        <SolidColorBrush x:Key="DelBrush" Color="#FF6B6B"/>
+        <SolidColorBrush x:Key="WarnBrush" Color="#F5B84B"/>
+    </Application.Resources>
+</Application>

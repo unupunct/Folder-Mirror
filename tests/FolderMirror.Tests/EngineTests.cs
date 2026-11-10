@@ -297,7 +297,7 @@ public class EngineTests
     public async Task IdenticalSourceAndDestination_IsRejected()
     {
         using var sb = new Sandbox();
-        sb.Profile.DestinationPath = sb.Src + "\\";
+        sb.Profile.DestinationPath = sb.Src + Path.DirectorySeparatorChar;
         var plan = await sb.Plan();
         Assert.Contains(plan.Issues, i => i.Code == "SamePath");
         await Assert.ThrowsAsync<SyncBlockedException>(() => sb.Engine().ExecuteAsync(plan, new ExecuteOptions(), null, CancellationToken.None));
@@ -531,7 +531,7 @@ public class EngineTests
     public async Task LongPaths_Over260Characters_AreSupported()
     {
         using var sb = new Sandbox();
-        var deep = string.Join("\\", Enumerable.Repeat(new string('d', 40), 7)); // ~280 chars
+        var deep = string.Join(Path.DirectorySeparatorChar, Enumerable.Repeat(new string('d', 40), 7)); // ~280 chars
         sb.Write(sb.Src, deep + "\\long.txt", "long");
         var r = await sb.Sync();
         Assert.Equal(SyncStatus.Completed, r.Status);

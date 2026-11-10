@@ -1,0 +1,70 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FolderMirror.Mac.ViewModels"
+        x:Class="FolderMirror.Mac.Views.ProfileEditorWindow"
+        Title="Profile" Width="720" Height="760" MinWidth="620" MinHeight="520"
+        Background="{DynamicResource WindowBg}" WindowStartupLocation="CenterOwner">
+    <DockPanel Margin="26,22">
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,14,0,0" Spacing="10">
+            <TextBlock Text="{Binding Error}" Foreground="{DynamicResource DelBrush}" TextWrapping="Wrap" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Content="Cancel" Click="OnCancel" MinWidth="96" HorizontalContentAlignment="Center"/>
+                <Button Content="Save profile" Classes="accent" Click="OnSave" MinWidth="120" HorizontalContentAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Heading}" Classes="title" Margin="0,0,0,14"/>
+        <ScrollViewer>
+            <StackPanel Spacing="14" Margin="0,0,14,0">
+                <Border Classes="card">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Folders" Classes="section"/>
+                        <TextBox Text="{Binding Name}" PlaceholderText="Profile name"/>
+                        <Grid ColumnDefinitions="*,Auto"><TextBox Text="{Binding Source}" PlaceholderText="Source folder"/><Button Grid.Column="1" Content="Choose…" Command="{Binding BrowseSourceCommand}" Margin="8,0,0,0"/></Grid>
+                        <Grid ColumnDefinitions="*,Auto"><TextBox Text="{Binding Destination}" PlaceholderText="Destination folder"/><Button Grid.Column="1" Content="Choose…" Command="{Binding BrowseDestinationCommand}" Margin="8,0,0,0"/></Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Mode" Classes="section"/>
+                        <ComboBox ItemsSource="{x:Static vm:ProfileEditorViewModel.Modes}" SelectedItem="{Binding Mode}" HorizontalAlignment="Stretch"/>
+                        <TextBlock Text="{Binding ModeDescription}" Classes="dim" TextWrapping="Wrap" FontSize="12.5"/>
+                        <Grid ColumnDefinitions="200,*" IsVisible="{Binding ShowConflict}"><TextBlock Text="When both sides changed" VerticalAlignment="Center"/><ComboBox Grid.Column="1" ItemsSource="{x:Static vm:ProfileEditorViewModel.Conflicts}" SelectedItem="{Binding Conflict}" HorizontalAlignment="Stretch"/></Grid>
+                        <Grid ColumnDefinitions="200,*"><TextBlock Text="Deleted files" VerticalAlignment="Center"/><ComboBox Grid.Column="1" ItemsSource="{x:Static vm:ProfileEditorViewModel.Deletions}" SelectedItem="{Binding Deletion}" HorizontalAlignment="Stretch"/></Grid>
+                        <Grid ColumnDefinitions="200,*"><TextBlock Text="Compare files by" VerticalAlignment="Center"/><ComboBox Grid.Column="1" ItemsSource="{x:Static vm:ProfileEditorViewModel.Comparisons}" SelectedItem="{Binding Comparison}" HorizontalAlignment="Stretch"/></Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Options and filters" Classes="section"/>
+                        <CheckBox Content="Include subfolders" IsChecked="{Binding Subdirs}"/>
+                        <CheckBox Content="Ignore hidden files (names starting with a dot)" IsChecked="{Binding IgnoreHidden}"/>
+                        <CheckBox Content="Ignore temporary files (.tmp, .DS_Store …)" IsChecked="{Binding IgnoreTemp}"/>
+                        <CheckBox Content="Ignore empty folders" IsChecked="{Binding IgnoreEmpty}"/>
+                        <CheckBox Content="Verify every copied file with SHA-256" IsChecked="{Binding Verify}"/>
+                        <CheckBox Content="Keep a backup copy of files that get overwritten" IsChecked="{Binding KeepOverwritten}"/>
+                        <TextBox Text="{Binding ExcludedExt}" PlaceholderText="Excluded extensions, comma separated (e.g. .log, .iso)"/>
+                        <TextBox Text="{Binding ExcludedFolders}" PlaceholderText="Excluded folder names, comma separated (e.g. node_modules, .git)"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Schedule (runs in the background through launchd)" Classes="section"/>
+                        <ComboBox ItemsSource="{x:Static vm:ProfileEditorViewModel.ScheduleKinds}" SelectedItem="{Binding ScheduleChoice}" HorizontalAlignment="Stretch"/>
+                        <Grid ColumnDefinitions="200,*" IsVisible="{Binding ShowTime}"><TextBlock Text="Start time (HH:MM)" VerticalAlignment="Center"/><TextBox Grid.Column="1" Text="{Binding Time}" Width="120" HorizontalAlignment="Left"/></Grid>
+                        <Grid ColumnDefinitions="200,*" IsVisible="{Binding ShowInterval}"><TextBlock Text="Repeat every (minutes)" VerticalAlignment="Center"/><TextBox Grid.Column="1" Text="{Binding Interval}" Width="120" HorizontalAlignment="Left"/></Grid>
+                        <ItemsControl ItemsSource="{Binding Days}" IsVisible="{Binding ShowDays}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate><DataTemplate><CheckBox Content="{Binding Label}" IsChecked="{Binding IsChecked}"/></DataTemplate></ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <CheckBox Content="Also run when I log in to my Mac" IsChecked="{Binding AtLogin}"/>
+                        <CheckBox Content="Skip the run when the source or destination drive is not connected" IsChecked="{Binding OnlyWhenAvailable}"/>
+                        <CheckBox Content="Allow scheduled runs to delete or archive files (off = deletions are skipped when nobody is watching)" IsChecked="{Binding UnattendedDeletes}"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

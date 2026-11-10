@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FolderMirror.Mac.Views.DashboardView">
+    <ScrollViewer>
+        <StackPanel Margin="36,30" Spacing="20">
+            <TextBlock Text="Dashboard" Classes="title"/>
+            <Grid ColumnDefinitions="*,*,*,*">
+                <Border Classes="card" Margin="0,0,10,0"><StackPanel><TextBlock Text="Profiles" Classes="dim"/><TextBlock Text="{Binding ProfileCount}" Classes="big"/></StackPanel></Border>
+                <Border Classes="card" Grid.Column="1" Margin="0,0,10,0"><StackPanel><TextBlock Text="Files synchronized" Classes="dim"/><TextBlock Text="{Binding FilesSynced}" Classes="big"/></StackPanel></Border>
+                <Border Classes="card" Grid.Column="2" Margin="0,0,10,0"><StackPanel><TextBlock Text="Last synchronization" Classes="dim"/><TextBlock Text="{Binding LastSync}" FontSize="17" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
+                <Border Classes="card" Grid.Column="3"><StackPanel><TextBlock Text="Next scheduled run" Classes="dim"/><TextBlock Text="{Binding NextRun}" FontSize="17" FontWeight="SemiBold" Margin="0,6,0,0"/></StackPanel></Border>
+            </Grid>
+
+            <Border Classes="card">
+                <StackPanel Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="Your profiles" Classes="section"/>
+                        <Button Grid.Column="1" Content="New profile" Classes="accent" Command="{Binding NewProfileCommand}"/>
+                    </Grid>
+                    <TextBlock Text="No profiles yet. Create one to start synchronizing." Classes="dim" IsVisible="{Binding !HasProfiles}"/>
+                    <ItemsControl ItemsSource="{Binding Cards}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="{DynamicResource CardBorder}" BorderThickness="0,0,0,1" Padding="0,10">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"/>
+                                            <TextBlock Text="{Binding Route}" Classes="dim" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding ModeText}" Foreground="{DynamicResource AccentBrush}" FontSize="12"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="Synchronize" VerticalAlignment="Center"
+                                                Command="{Binding SyncCommand}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Recent activity" Classes="section"/>
+                    <TextBlock Text="Nothing has been synchronized yet." Classes="dim" IsVisible="{Binding !HasRecent}"/>
+                    <ItemsControl ItemsSource="{Binding Recent}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="150,*,Auto" Margin="0,3">
+                                    <TextBlock Text="{Binding StartLocal, StringFormat=g}" Classes="dim"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding ProfileName}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Status}" Opacity="0.8"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

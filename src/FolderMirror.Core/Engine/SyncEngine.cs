@@ -330,7 +330,7 @@ public sealed class SyncEngine
             foreach (var f in plan.StaleTempFiles) { try { File.SetAttributes(f, FileAttributes.Normal); File.Delete(f); } catch { } }
 
             // Folders first
-            foreach (var d in dirCreates.OrderBy(d => d.RelPath.Count(c => c == '\\')))
+            foreach (var d in dirCreates.OrderBy(d => d.RelPath.Count(c => c == Path.DirectorySeparatorChar)))
             {
                 try
                 {
@@ -356,7 +356,7 @@ public sealed class SyncEngine
             }
 
             if (deletesAllowed)
-                foreach (var d in delItems.Where(i => i.IsDirectory).OrderByDescending(i => i.RelPath.Count(c => c == '\\')))
+                foreach (var d in delItems.Where(i => i.IsDirectory).OrderByDescending(i => i.RelPath.Count(c => c == Path.DirectorySeparatorChar)))
                 {
                     var path = d.Direction == CopyDirection.SourceToDestination ? d.DestinationPath : d.SourcePath;
                     try { if (Directory.Exists(path)) Directory.Delete(path, false); }

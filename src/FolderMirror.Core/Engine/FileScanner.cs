@@ -28,7 +28,8 @@ public static class FileScanner
         {
             if (f.Contains('\\') || f.Contains('/'))
             {
-                var norm = f.Replace('/', '\\').Trim('\\');
+                var sep = Path.DirectorySeparatorChar;
+                var norm = f.Replace('/', sep).Replace('\\', sep).Trim(sep);
                 if (rel.Equals(norm, StringComparison.OrdinalIgnoreCase)) return true;
             }
             else if (name.Equals(f, StringComparison.OrdinalIgnoreCase)) return true;
@@ -75,7 +76,7 @@ public static class FileScanner
 
             foreach (var child in children)
             {
-                var rel = dirRel.Length == 0 ? child.Name : dirRel + "\\" + child.Name;
+                var rel = dirRel.Length == 0 ? child.Name : dirRel + Path.DirectorySeparatorChar + child.Name;
                 try
                 {
                     var attrs = child.Attributes;

@@ -15,8 +15,10 @@ public static class AppPaths
         get
         {
             var o = Environment.GetEnvironmentVariable("FOLDERMIRROR_DATA");
-            var dir = !string.IsNullOrWhiteSpace(o) ? o
-                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FolderMirror");
+            var baseDir = OperatingSystem.IsMacOS()
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support")
+                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var dir = !string.IsNullOrWhiteSpace(o) ? o : Path.Combine(baseDir, "FolderMirror");
             Directory.CreateDirectory(dir);
             return dir;
         }

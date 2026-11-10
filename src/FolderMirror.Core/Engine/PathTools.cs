@@ -17,14 +17,18 @@ public static class PathTools
     }
 
     public static bool SamePath(string a, string b) =>
-        string.Equals(Normalize(a), Normalize(b), StringComparison.OrdinalIgnoreCase);
+        string.Equals(Normalize(a), Normalize(b), Comparison);
+
+    /// <summary>Windows and macOS (default APFS) are case-insensitive; Linux is not.</summary>
+    public static readonly StringComparison Comparison =
+        OperatingSystem.IsLinux() ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
     /// <summary>True when <paramref name="child"/> is inside <paramref name="parent"/> (not equal).</summary>
     public static bool IsInside(string child, string parent)
     {
         var c = Normalize(child);
-        var p = Normalize(parent).TrimEnd('\\') + "\\";
-        return c.StartsWith(p, StringComparison.OrdinalIgnoreCase) && c.Length > p.Length - 1;
+        var p = Normalize(parent).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+        return c.StartsWith(p, Comparison) && c.Length > p.Length - 1;
     }
 
     public static string Combine(string root, string rel) => Path.Combine(root, rel);
@@ -56,7 +60,16 @@ public static class PathTools
 
     public static string? DriveRoot(string path)
     {
-        try { return Path.GetPathRoot(Normalize(path)); } catch { return null; }
+        try
+        {
+            var full = Normalize(path);
+            if (OperatingSystem.IsWindows()) return Path.GetPathRoot(full);
+            // macOS: external drives and network shares are mounted under /Volumes/<name>
+            var parts = full.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 2 && parts[0] == "Volumes") return "/Volumes/" + parts[1];
+            return "/";
+        }
+        catch { return null; }
     }
 
     public static bool IsRootAvailable(string path)
@@ -66,14 +79,16 @@ public static class PathTools
         try { return Directory.Exists(root); } catch { return false; }
     }
 
-    public static bool IsNetworkPath(string path) => Normalize(path).StartsWith(@"\\", StringComparison.Ordinal);
+    public static bool IsNetworkPath(string path) =>
+        OperatingSystem.IsWindows() && Normalize(path).StartsWith(@"\\", StringComparison.Ordinal);
 
     public static DriveType? GetDriveType(string path)
     {
         try
         {
             var root = DriveRoot(path);
-            if (root == null || root.StartsWith(@"\\")) return DriveType.Network;
+            if (root == null) return null;
+            if (OperatingSystem.IsWindows() && root.StartsWith(@"\\")) return DriveType.Network;
             return new DriveInfo(root).DriveType;
         }
         catch { return null; }
@@ -99,6 +114,12 @@ public sealed class WindowsDiskSpace : IDiskSpaceProvider
             while (!string.IsNullOrEmpty(p) && !Directory.Exists(p))
                 p = Path.GetDirectoryName(p) ?? "";
             if (string.IsNullOrEmpty(p)) return false;
+            if (!OperatingSystem.IsWindows())
+            {
+                var di = new DriveInfo(p);
+                freeBytes = di.AvailableFreeSpace; totalBytes = di.TotalSize;
+                return true;
+            }
             if (!p.EndsWith('\\')) p += "\\";
             if (!GetDiskFreeSpaceEx(p, out var free, out var total, out _)) return false;
             freeBytes = (long)free; totalBytes = (long)total;
@@ -138,7 +159,7 @@ public static class ErrorTranslator
             DirectoryNotFoundException => "A folder could not be found. It may have been moved, deleted or disconnected." + where,
             FileNotFoundException => "The file no longer exists (it was probably removed during synchronization)." + where,
             OperationCanceledException => "The operation was cancelled.",
-            IOException io when IsDiskFull(io) => "There is not enough free space on the destination drive." + where,
+            IOException io when IsDiskFull(io) || io.Message.Contains("No space left", StringComparison.OrdinalIgnoreCase) => "There is not enough free space on the destination drive." + where,
             IOException io when IsLocked(io) => "The file is currently in use by another program and could not be copied." + where,
             IOException io when IsNetworkLost(io) => "The network location or drive became unavailable. Check the connection." + where,
             IOException io when io.HResult == PathTooLongHr => "The file path is too long for Windows." + where,

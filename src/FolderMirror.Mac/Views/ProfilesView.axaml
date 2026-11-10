@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="FolderMirror.Mac.Views.ProfilesView">
+    <DockPanel Margin="36,30,36,24">
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+            <TextBlock Text="Profiles" Classes="title"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="Import…" Command="{Binding ImportCommand}"/>
+                <Button Content="Export…" Command="{Binding ExportCommand}"/>
+                <Button Content="New profile" Classes="accent" Command="{Binding NewProfileCommand}"/>
+            </StackPanel>
+        </Grid>
+        <TextBlock Text="No profiles yet. Click “New profile” to create your first one." Classes="dim" IsVisible="{Binding IsEmpty}" DockPanel.Dock="Top"/>
+        <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Cards}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Classes="card" Margin="0,0,0,12">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Route}" Classes="dim" TextTrimming="CharacterEllipsis"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="0,4,0,0">
+                                        <TextBlock Text="{Binding ModeText}" Foreground="{DynamicResource AccentBrush}"/>
+                                        <TextBlock Text="{Binding ScheduleText}" Classes="dim"/>
+                                        <TextBlock Text="{Binding LastText}" Classes="dim"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Button Content="Synchronize" Classes="accent" Command="{Binding SyncCommand}"/>
+                                    <Button Content="Edit" Command="{Binding EditCommand}"/>
+                                    <Button Content="Duplicate" Command="{Binding DuplicateCommand}"/>
+                                    <Button Content="Delete" Classes="danger" Command="{Binding DeleteCommand}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>
