@@ -52,6 +52,19 @@ Download from the [latest release](https://github.com/unupunct/Folder-Mirror/rel
 
 Windows 10/11 x64. No administrator rights needed.
 
+## macOS (preview)
+
+Folder Mirror also runs on macOS 11+ (Apple silicon and Intel) with the same sync engine and safety rules.
+
+![macOS synchronize preview](docs/screenshots/mac-sync-preview.png)
+
+- **Install:** download `FolderMirror-1.1.0-macOS-arm64.dmg` (Apple silicon) or `...-x64.dmg` (Intel) from the [releases page](https://github.com/unupunct/Folder-Mirror/releases), open it and drag *Folder Mirror* to *Applications*. No .NET install is needed.
+- **First launch:** the app is ad-hoc signed but not notarized (that needs a paid Apple Developer account). Right-click the app, choose *Open*, then *Open* again. Or run `xattr -dr com.apple.quarantine "/Applications/Folder Mirror.app"`.
+- **Schedules** are launchd agents in `~/Library/LaunchAgents` and run in the background even when the app is closed. For protected folders (Documents, Desktop, external drives) give Folder Mirror *Full Disk Access* in System Settings > Privacy & Security.
+- **Data** is stored in `~/Library/Application Support/FolderMirror`.
+- **Differences from Windows:** a separate Avalonia UI (no tray icon, setup wizard or language setting), and no Task Scheduler. Build with `scripts/build-mac.sh` on a Mac, or via the *macOS* GitHub workflow.
+- **Status:** the engine tests and a packaged-app smoke test run on a macOS CI runner. It has not yet been hand-tested on physical Macs, so please report problems.
+
 ## How the modes behave
 
 | Mode | Copies new/changed | Deletes | Notes |

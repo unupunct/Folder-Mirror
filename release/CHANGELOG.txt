@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+1.1.0 (2026-11-10) - macOS preview
+  - New macOS app (Apple silicon and Intel) as drag-to-install .dmg
+  - Sync engine made cross-platform (paths, /Volumes drives, disk space, protected folders)
+  - Schedules through launchd agents; engine tests run on macOS CI
+  - Windows app unchanged (still 1.0.0)
+
 1.0.0 (2026-11-10)
   First release.
   - Mirror, one-way, two-way (with conflict resolution) and incremental modes
