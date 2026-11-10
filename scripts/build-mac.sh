@@ -35,7 +35,17 @@ if [ "$RID" = "universal" ]; then
     rel="${f#"$OUT/publish-osx-arm64/"}"
     other="$OUT/publish-osx-x64/$rel"
     if file -b "$f" | grep -q "Mach-O" && [ -f "$other" ]; then
-      lipo -create "$f" "$other" -output "$PUB/$rel"
+      have="$(lipo -archs "$f")"
+      cur="$PUB/$rel"
+      # Some native libraries (e.g. libHarfBuzzSharp) already ship fat; only add architectures that are missing.
+      for arch in $(lipo -archs "$other"); do
+        case " $have " in *" $arch "*) continue ;; esac
+        thin="$OUT/thin-$arch.tmp"
+        if [ "$(lipo -archs "$other" | wc -w | tr -d ' ')" = "1" ]; then cp "$other" "$thin"; else lipo -extract "$arch" "$other" -output "$thin"; fi
+        lipo -create "$cur" "$thin" -output "$cur.new"
+        mv "$cur.new" "$cur"; rm -f "$thin"
+        have="$have $arch"
+      done
       merged=$((merged+1))
     fi
   done < <(find "$OUT/publish-osx-arm64" -type f -print0)
