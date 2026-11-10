@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FolderMirror.Core/FolderMirror.Core.csproj" />
+    <Project Path="src/FolderMirror/FolderMirror.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FolderMirror.Tests/FolderMirror.Tests.csproj" />
+  </Folder>
+</Solution>

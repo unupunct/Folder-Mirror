@@ -1,0 +1,7 @@
+bin/
+obj/
+publish/
+release/*.exe
+.scratch/
+.vs/
+*.user

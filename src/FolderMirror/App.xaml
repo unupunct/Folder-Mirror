@@ -1,0 +1,80 @@
+﻿<Application x:Class="FolderMirror.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FolderMirror.Services"
+             xmlns:vm="clr-namespace:FolderMirror.ViewModels"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <svc:ActionBrushConverter x:Key="ActionBrush"/>
+            <svc:StatusBrushConverter x:Key="StatusBrush"/>
+            <svc:OpActionBrushConverter x:Key="OpActionBrush"/>
+            <svc:SeverityBrushConverter x:Key="SeverityBrush"/>
+            <svc:SeverityGlyphConverter x:Key="SeverityGlyph"/>
+            <svc:InverseBoolConverter x:Key="InverseBool"/>
+            <svc:NullToCollapsedConverter x:Key="NullToCollapsed"/>
+            <svc:BoolToVis x:Key="BoolToVis"/>
+            <svc:EnumTextConverter x:Key="EnumText"/>
+            <svc:ConflictVisibilityConverter x:Key="ConflictVis"/>
+
+            <!-- Profile card (dashboard) -->
+            <DataTemplate x:Key="ProfileCardTemplate" DataType="{x:Type vm:ProfileCardViewModel}">
+                <Border Style="{StaticResource Card}" Width="372" Margin="0,0,16,16" Padding="18,16">
+                    <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <Border Width="38" Height="38" CornerRadius="10" Background="{DynamicResource AccentSoftBrush}">
+                                <TextBlock Style="{StaticResource Icon}" Text="{Binding ModeGlyph}" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" FontSize="18"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding ModeTitle}" Style="{StaticResource Dim}" FontSize="12"/>
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Grid.Row="1" Margin="0,14,0,0">
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="22"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE838;" FontSize="13" Foreground="{DynamicResource TextDimBrush}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Source}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Source}" Style="{StaticResource Dim}"/>
+                            </Grid>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="22"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE74E;" FontSize="13" Foreground="{DynamicResource AccentBrush}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Destination}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Destination}" Style="{StaticResource Dim}"/>
+                            </Grid>
+                        </StackPanel>
+                        <Grid Grid.Row="2" Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Last synchronization" Style="{StaticResource Dim}" FontSize="11"/>
+                                <TextBlock Text="{Binding LastSyncText}" FontSize="12.5" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Schedule" Style="{StaticResource Dim}" FontSize="11"/>
+                                <TextBlock Text="{Binding ScheduleText}" FontSize="12.5" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding ScheduleText}"/>
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Grid.Row="3" Text="{Binding AvailabilityText}" Foreground="{DynamicResource ConflictBrush}" FontSize="12" Margin="0,0,0,0" VerticalAlignment="Top" Visibility="{Binding AvailabilityText, Converter={StaticResource NullToCollapsed}}"/>
+                        <Grid Grid.Row="3" Margin="0,24,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <Button Style="{StaticResource AccentButton}" Command="{Binding RunCommand}" Margin="0,0,8,0">
+                                <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="&#xE768;" Foreground="{DynamicResource AccentFgBrush}" FontSize="12" Margin="0,0,8,0"/><TextBlock Text="{Binding [btn.run], Source={x:Static svc:Loc.Instance}}" Foreground="{DynamicResource AccentFgBrush}"/></StackPanel>
+                            </Button>
+                            <Button Grid.Column="1" Command="{Binding EditCommand}" Padding="12,0" Margin="0,0,8,0" ToolTip="Edit profile">
+                                <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="&#xE70F;" FontSize="13" Margin="0,0,6,0"/><TextBlock Text="{Binding [btn.edit], Source={x:Static svc:Loc.Instance}}"/></StackPanel>
+                            </Button>
+                            <Button Grid.Column="2" Command="{Binding DeleteCommand}" Style="{StaticResource DangerButton}" Padding="12,0" ToolTip="Delete profile">
+                                <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Icon}" Text="&#xE74D;" FontSize="13" Foreground="{DynamicResource DeleteBrush}" Margin="0,0,6,0"/><TextBlock Text="{Binding [btn.delete], Source={x:Static svc:Loc.Instance}}" Foreground="{DynamicResource DeleteBrush}"/></StackPanel>
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -1,0 +1,54 @@
+<UserControl x:Class="FolderMirror.Views.SchedulesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FolderMirror.Services">
+    <DockPanel Margin="36,30,36,24">
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Text="{Binding [sched.title], Source={x:Static svc:Loc.Instance}}" Style="{StaticResource PageTitle}"/>
+            <TextBlock Style="{StaticResource Dim}" Margin="0,4,0,0" TextWrapping="Wrap"
+                       Text="Schedules run through Windows Task Scheduler, so profiles synchronize in the background even when Folder Mirror is closed."/>
+            <Border Style="{StaticResource Card}" Margin="0,18,0,18" Padding="18,14">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock Text="Pause all scheduled synchronization" FontWeight="SemiBold"/>
+                        <TextBlock Text="Scheduled runs that start while paused are skipped. Manual runs are not affected." Style="{StaticResource Dim}" FontSize="12" Margin="0,2,0,0"/>
+                    </StackPanel>
+                    <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding Paused}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+        </StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <ItemsControl ItemsSource="{Binding Rows}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Margin="0,0,0,10" Padding="18,14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="210"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Folders}" Style="{StaticResource Dim}" FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+                                        <TextBlock Text="{Binding Description}" Margin="0,6,0,0" Foreground="{DynamicResource AccentBrush}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Next run" Style="{StaticResource Dim}" FontSize="11"/>
+                                        <TextBlock Text="{Binding NextText}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <Button Content="Edit schedule" Command="{Binding EditCommand}" Margin="0,0,8,0"/>
+                                        <Button Content="Run now" Command="{Binding RunNowCommand}"/>
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="3" Style="{StaticResource Switch}" IsChecked="{Binding Enabled}" VerticalAlignment="Center" ToolTip="Enable or disable this schedule"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <StackPanel HorizontalAlignment="Center" Margin="0,60,0,0" Visibility="{Binding HasRows, Converter={StaticResource BoolToVis}, ConverterParameter=invert}">
+                    <TextBlock Style="{StaticResource Icon}" Text="&#xE787;" FontSize="40" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Create a profile first, then schedule it here." Style="{StaticResource Dim}" Margin="0,12,0,0"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

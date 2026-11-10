@@ -1,0 +1,72 @@
+<UserControl x:Class="FolderMirror.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="clr-namespace:FolderMirror.Services">
+    <UserControl.Resources>
+        <Style x:Key="SettingTitle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}"><Setter Property="FontSize" Value="13.5"/></Style>
+        <Style x:Key="SettingRow" TargetType="Grid"><Setter Property="Margin" Value="0,7"/></Style>
+        <DataTemplate x:Key="EnumItem"><TextBlock Text="{Binding Converter={StaticResource EnumText}}" Foreground="{DynamicResource TextBrush}"/></DataTemplate>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="36,30,36,30" MaxWidth="900" HorizontalAlignment="Left">
+            <TextBlock Text="{Binding [settings.title], Source={x:Static svc:Loc.Instance}}" Style="{StaticResource PageTitle}"/>
+            <TextBlock Text="{Binding Message}" Foreground="{DynamicResource ConflictBrush}" Margin="0,6,0,0" Visibility="{Binding Message, Converter={StaticResource NullToCollapsed}}"/>
+
+            <!-- General -->
+            <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                <StackPanel>
+                    <TextBlock Text="General" Style="{StaticResource SectionTitle}" Margin="0,0,0,6"/>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Start with Windows" VerticalAlignment="Center"/><CheckBox Style="{StaticResource Switch}" IsChecked="{Binding StartWithWindows}" HorizontalAlignment="Right"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Minimize to system tray when the window is closed" VerticalAlignment="Center"/><CheckBox Style="{StaticResource Switch}" IsChecked="{Binding MinimizeToTray}" HorizontalAlignment="Right"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Start minimized" VerticalAlignment="Center"/><CheckBox Style="{StaticResource Switch}" IsChecked="{Binding StartMinimized}" HorizontalAlignment="Right"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Confirm before starting a synchronization" VerticalAlignment="Center"/><CheckBox Style="{StaticResource Switch}" IsChecked="{Binding ConfirmBeforeSync}" HorizontalAlignment="Right"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Automatically check destination availability" VerticalAlignment="Center"/><CheckBox Style="{StaticResource Switch}" IsChecked="{Binding CheckAvailability}" HorizontalAlignment="Right"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Show notifications when a synchronization finishes or fails" VerticalAlignment="Center"/><CheckBox Style="{StaticResource Switch}" IsChecked="{Binding ShowNotifications}" HorizontalAlignment="Right"/></Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Synchronization -->
+            <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="Synchronization defaults" Style="{StaticResource SectionTitle}" Margin="0,0,0,2"/>
+                    <TextBlock Text="Used when you create a new profile. Existing profiles keep their own settings." Style="{StaticResource Dim}" FontSize="12" Margin="0,0,0,6"/>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Comparison method" VerticalAlignment="Center"/><ComboBox Width="300" HorizontalAlignment="Right" ItemsSource="{Binding Comparisons}" SelectedItem="{Binding DefaultComparison}" ItemTemplate="{StaticResource EnumItem}"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Synchronization mode" VerticalAlignment="Center"/><ComboBox Width="300" HorizontalAlignment="Right" ItemsSource="{Binding Modes}" SelectedItem="{Binding DefaultMode}" ItemTemplate="{StaticResource EnumItem}"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Conflict behavior (two-way)" VerticalAlignment="Center"/><ComboBox Width="300" HorizontalAlignment="Right" ItemsSource="{Binding ConflictPolicies}" SelectedItem="{Binding DefaultConflict}" ItemTemplate="{StaticResource EnumItem}"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Deletion behavior" VerticalAlignment="Center"/><ComboBox Width="300" HorizontalAlignment="Right" ItemsSource="{Binding DeletionBehaviors}" SelectedItem="{Binding DefaultDeletion}" ItemTemplate="{StaticResource EnumItem}"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><StackPanel><TextBlock Text="Maximum parallel file operations"/><TextBlock Text="Use 1–2 for external hard disks and network shares, 4–8 for SSDs." Style="{StaticResource Dim}" FontSize="12"/></StackPanel><ComboBox Width="120" HorizontalAlignment="Right" ItemsSource="{Binding ParallelOptions}" SelectedItem="{Binding MaxParallel}"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><StackPanel><TextBlock Text="Verify every copied file (SHA-256)"/><TextBlock Text="Re-reads each copy to prove it matches the source. Safer but slower." Style="{StaticResource Dim}" FontSize="12"/></StackPanel><CheckBox Style="{StaticResource Switch}" IsChecked="{Binding VerifyCopies}" HorizontalAlignment="Right"/></Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Interface -->
+            <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="Interface" Style="{StaticResource SectionTitle}" Margin="0,0,0,6"/>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Dark theme (turn off for the light theme)" VerticalAlignment="Center"/><CheckBox Style="{StaticResource Switch}" IsChecked="{Binding DarkTheme}" HorizontalAlignment="Right"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Accent color" VerticalAlignment="Center"/><ComboBox Width="200" HorizontalAlignment="Right" ItemsSource="{Binding Accents}" SelectedItem="{Binding Accent}"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><StackPanel><TextBlock Text="Language"/><TextBlock Text="Translates the navigation, dashboard and main buttons; other text stays in English." Style="{StaticResource Dim}" FontSize="12"/></StackPanel><ComboBox Width="200" HorizontalAlignment="Right" ItemsSource="{Binding Languages}" SelectedItem="{Binding Language}"/></Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Logging -->
+            <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="Logging" Style="{StaticResource SectionTitle}" Margin="0,0,0,6"/>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Log level" VerticalAlignment="Center"/><ComboBox Width="200" HorizontalAlignment="Right" ItemsSource="{Binding LogLevels}" SelectedItem="{Binding LogLevel}"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}"><TextBlock Text="Maximum size of one log file (MB)" VerticalAlignment="Center"/><ComboBox Width="120" HorizontalAlignment="Right" ItemsSource="{Binding LogSizes}" SelectedItem="{Binding MaxLogSize}"/></Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="Log folder" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding LogFolder, Mode=OneWay}" IsReadOnly="True"/>
+                        <Button Grid.Column="2" Content="Change…" Command="{Binding BrowseLogFolderCommand}" Margin="8,0,0,0"/>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button Content="Open log folder" Command="{Binding OpenLogFolderCommand}" Margin="0,0,8,0"/>
+                        <Button Content="Clear logs" Command="{Binding ClearLogsCommand}" Style="{StaticResource DangerButton}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

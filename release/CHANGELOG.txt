@@ -1,0 +1,18 @@
+CHANGELOG
+=========
+
+1.0.0 (2026-11-10)
+  First release.
+  - Mirror, one-way, two-way (with conflict resolution) and incremental modes
+  - Mandatory preview from the real filesystem state; colour-coded table, filters, summary
+  - Safe copy engine: temp file, flush, optional SHA-256 verify, atomic rename,
+    cancellation, progress, speed and ETA, locked-file retries, long paths
+  - Archive of deleted files and versions of overwritten files
+  - Guards: same/nested folders, drive roots, system folders, unavailable drives,
+    insufficient space, unrelated destination contents, empty source
+  - Wizard, profile duplicate / export / import
+  - Windows Task Scheduler integration with background mode in the same exe
+  - SQLite history with search, filters, per-run report and CSV export
+  - System tray with notifications, dark/light theme, accent colours, languages
+  - Serilog logging with size limit; 40+ automated engine tests
+  - Self-contained single-file FolderMirror.exe and Inno Setup installer
