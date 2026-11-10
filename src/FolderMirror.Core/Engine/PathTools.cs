@@ -100,7 +100,7 @@ public interface IDiskSpaceProvider
     bool TryGetSpace(string path, out long freeBytes, out long totalBytes);
 }
 
-public sealed class WindowsDiskSpace : IDiskSpaceProvider
+public sealed class SystemDiskSpace : IDiskSpaceProvider
 {
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     static extern bool GetDiskFreeSpaceEx(string dir, out ulong freeToCaller, out ulong total, out ulong totalFree);

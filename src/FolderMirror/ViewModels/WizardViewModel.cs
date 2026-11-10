@@ -14,7 +14,7 @@ public partial class WizardViewModel : ObservableObject
     public SyncProfile Profile { get; }
     public bool IsNew { get; }
     public Action<bool>? CloseRequested { get; set; }
-    readonly IDiskSpaceProvider _space = new WindowsDiskSpace();
+    readonly IDiskSpaceProvider _space = new SystemDiskSpace();
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(IsStep1), nameof(IsStep2), nameof(IsStep3), nameof(IsStep4), nameof(CanNext), nameof(IsLast), nameof(StepTitle))] int _step = 1;
     [ObservableProperty] string _name;

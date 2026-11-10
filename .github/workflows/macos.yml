@@ -52,6 +52,21 @@ jobs:
           code=$?
           echo "exit code: $code"
           [ "$code" = "3" ]
+      - name: Capture screenshots of the packaged app (demo data only)
+        if: ${{ matrix.rid == 'osx-arm64' }}
+        continue-on-error: true
+        run: |
+          export FOLDERMIRROR_DATA="$RUNNER_TEMP/fm-shot-data"
+          APP="release/mac/stage-${{ matrix.rid }}/Folder Mirror.app/Contents/MacOS/FolderMirror"
+          mkdir -p release/mac/screenshots
+          "$APP" --screenshots "$PWD/release/mac/screenshots" --demo-root "$HOME/FolderMirrorDemo"
+          ls -l release/mac/screenshots
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.rid == 'osx-arm64' }}
+        with:
+          name: FolderMirror-macOS-screenshots
+          path: release/mac/screenshots/*.png
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         with:
           name: FolderMirror-macOS-${{ matrix.rid }}

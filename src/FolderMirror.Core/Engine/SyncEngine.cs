@@ -44,7 +44,7 @@ public sealed class SyncEngine
     {
         _state = state;
         _log = log ?? Serilog.Core.Logger.None;
-        _space = space ?? new WindowsDiskSpace();
+        _space = space ?? new SystemDiskSpace();
     }
 
     public Task<SyncPlan> PlanAsync(SyncProfile profile, int maxParallel, Action<string>? status, CancellationToken ct) =>

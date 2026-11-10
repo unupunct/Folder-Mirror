@@ -266,6 +266,7 @@ public class EngineTests
     [Fact]
     public async Task LockedFile_ReportsFriendlyError_AndOtherFilesStillCopy()
     {
+        if (!OperatingSystem.IsWindows()) return; // exclusive file locks are a Windows concept
         using var sb = new Sandbox();
         var locked = sb.Write(sb.Src, "locked.txt", "L"); sb.Write(sb.Src, "free.txt", "F");
         using var hold = new FileStream(locked, FileMode.Open, FileAccess.ReadWrite, FileShare.None);

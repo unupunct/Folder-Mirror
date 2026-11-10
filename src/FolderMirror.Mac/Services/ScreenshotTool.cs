@@ -14,13 +14,13 @@ namespace FolderMirror.Mac.Services;
 /// </summary>
 public static class ScreenshotTool
 {
-    public static async Task RunAsync(string outDir, Window main, IClassicDesktopStyleApplicationLifetime app)
+    public static async Task RunAsync(string outDir, Window main, IClassicDesktopStyleApplicationLifetime app, string? demoRoot = null)
     {
         try
         {
             Directory.CreateDirectory(outDir);
             var vm = (MainViewModel)main.DataContext!;
-            var root = Path.Combine(Path.GetTempPath(), "FolderMirrorDemo-" + Environment.ProcessId);
+            var root = demoRoot ?? Path.Combine(Path.GetTempPath(), "FolderMirrorDemo-" + Environment.ProcessId);
             var profiles = await SeedAsync(root);
             await Task.Delay(500);
 
@@ -42,7 +42,7 @@ public static class ScreenshotTool
             editor.Show(main); await Task.Delay(700);
             Save(editor, Path.Combine(outDir, "mac-profile-editor.png"));
             editor.Close();
-            try { Directory.Delete(root, true); } catch { }
+            if (demoRoot == null) { try { Directory.Delete(root, true); } catch { } }
         }
         catch (Exception ex) { Console.Error.WriteLine("Screenshot run failed: " + ex); }
         finally { Dispatcher.UIThread.Post(() => app.Shutdown(0)); }

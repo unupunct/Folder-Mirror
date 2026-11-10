@@ -21,7 +21,11 @@ public partial class App : Application
             var args = desktop.Args ?? Array.Empty<string>();
             var i = Array.IndexOf(args, "--screenshots");
             if (i >= 0 && i + 1 < args.Length)
-                main.Opened += async (_, _) => await ScreenshotTool.RunAsync(args[i + 1], main, desktop);
+                {
+                var d = Array.IndexOf(args, "--demo-root");
+                var demo = d >= 0 && d + 1 < args.Length ? args[d + 1] : null;
+                main.Opened += async (_, _) => await ScreenshotTool.RunAsync(args[i + 1], main, desktop, demo);
+            }
         }
         base.OnFrameworkInitializationCompleted();
     }

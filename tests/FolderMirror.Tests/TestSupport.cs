@@ -11,12 +11,12 @@ public sealed class Sandbox : IDisposable
     public string Dst { get; }
     public SyncProfile Profile { get; }
     public IStateStore State { get; set; } = new MemoryStateStore();
-    public IDiskSpaceProvider Space { get; set; } = new WindowsDiskSpace();
+    public IDiskSpaceProvider Space { get; set; } = new SystemDiskSpace();
 
     static int _n;
     public Sandbox(SyncMode mode = SyncMode.OneWay)
     {
-        Root = Path.Combine(Path.GetTempPath(), "FolderMirrorTests", $"{Environment.ProcessId}_{Interlocked.Increment(ref _n)}_{Guid.NewGuid():N}"[..40]);
+        Root = Path.Combine(Path.GetTempPath(), "FolderMirrorTests", $"{Environment.ProcessId}_{Interlocked.Increment(ref _n)}_{Guid.NewGuid():N}"[..36]);
         Src = Path.Combine(Root, "src");
         Dst = Path.Combine(Root, "dst");
         Directory.CreateDirectory(Src); Directory.CreateDirectory(Dst);
@@ -27,15 +27,17 @@ public sealed class Sandbox : IDisposable
 
     public string Write(string side, string rel, string content, DateTime? mtimeUtc = null)
     {
-        var path = Path.Combine(side, rel);
+        var path = Path.Combine(side, Rel(rel));
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, content);
         File.SetLastWriteTimeUtc(path, mtimeUtc ?? DateTime.UtcNow.AddMinutes(-30));
         return path;
     }
 
-    public static string Read(string side, string rel) => File.ReadAllText(Path.Combine(side, rel));
-    public static bool Exists(string side, string rel) => File.Exists(Path.Combine(side, rel));
+    /// <summary>Tests are written with Windows-style relative paths; make them portable.</summary>
+    public static string Rel(string rel) => rel.Replace('\\', Path.DirectorySeparatorChar);
+    public static string Read(string side, string rel) => File.ReadAllText(Path.Combine(side, Rel(rel)));
+    public static bool Exists(string side, string rel) => File.Exists(Path.Combine(side, Rel(rel)));
 
     public async Task<SyncPlan> Plan(SyncProfile? p = null) =>
         await Engine().PlanAsync(p ?? Profile, 2, null, CancellationToken.None);
