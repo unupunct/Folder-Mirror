@@ -58,7 +58,7 @@ Folder Mirror also runs on macOS 11+ (Apple silicon and Intel) with the same syn
 
 ![macOS synchronize preview](docs/screenshots/mac-sync-preview.png)
 
-- **Install:** download `FolderMirror-1.1.0-macOS-arm64.dmg` (Apple silicon) or `...-x64.dmg` (Intel) from the [releases page](https://github.com/unupunct/Folder-Mirror/releases), open it and drag *Folder Mirror* to *Applications*. No .NET install is needed.
+- **Install:** download `FolderMirror-1.1.0-macOS-universal.dmg` (runs natively on Apple silicon and Intel) from the [releases page](https://github.com/unupunct/Folder-Mirror/releases), open it and drag *Folder Mirror* to *Applications*. No .NET install is needed.
 - **First launch:** the app is ad-hoc signed but not notarized (that needs a paid Apple Developer account). Right-click the app, choose *Open*, then *Open* again. Or run `xattr -dr com.apple.quarantine "/Applications/Folder Mirror.app"`.
 - **Schedules** are launchd agents in `~/Library/LaunchAgents` and run in the background even when the app is closed. For protected folders (Documents, Desktop, external drives) give Folder Mirror *Full Disk Access* in System Settings > Privacy & Security.
 - **Data** is stored in `~/Library/Application Support/FolderMirror`.

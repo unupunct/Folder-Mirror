@@ -125,7 +125,7 @@ public sealed class StateRepository : IStateStore
 
     public Dictionary<string, FileState> Load(Guid profileId)
     {
-        var d = new Dictionary<string, FileState>(StringComparer.OrdinalIgnoreCase);
+        var d = new Dictionary<string, FileState>(PathTools.KeyComparer);
         using var c = _db.Open();
         using var cmd = c.CreateCommand();
         cmd.CommandText = "SELECT rel_path,s_size,s_mtime,d_size,d_mtime FROM file_state WHERE profile_id=$p";

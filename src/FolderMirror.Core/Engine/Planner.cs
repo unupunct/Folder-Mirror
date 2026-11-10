@@ -18,10 +18,10 @@ public sealed class MemoryStateStore : IStateStore
 {
     readonly Dictionary<Guid, Dictionary<string, FileState>> _data = new();
     public Dictionary<string, FileState> Load(Guid id) =>
-        _data.TryGetValue(id, out var d) ? new(d, StringComparer.OrdinalIgnoreCase) : new(StringComparer.OrdinalIgnoreCase);
+        _data.TryGetValue(id, out var d) ? new(d, PathTools.KeyComparer) : new(PathTools.KeyComparer);
     public void Save(Guid id, IEnumerable<KeyValuePair<string, FileState>> upserts, IEnumerable<string> deletes)
     {
-        if (!_data.TryGetValue(id, out var d)) _data[id] = d = new(StringComparer.OrdinalIgnoreCase);
+        if (!_data.TryGetValue(id, out var d)) _data[id] = d = new(PathTools.KeyComparer);
         foreach (var kv in upserts) d[kv.Key] = kv.Value;
         foreach (var k in deletes) d.Remove(k);
     }
@@ -105,11 +105,11 @@ public sealed class Planner
         plan.DestinationFileCount = dst.FileCount;
 
         status?.Invoke("Comparing…");
-        var prev = twoWay ? _state.Load(p.Id) : new Dictionary<string, FileState>(StringComparer.OrdinalIgnoreCase);
+        var prev = twoWay ? _state.Load(p.Id) : new Dictionary<string, FileState>(PathTools.KeyComparer);
 
         // Pairs present on both sides need a comparison (may involve hashing).
         var pairs = src.Entries.Values.Where(e => !e.IsDirectory && dst.Entries.TryGetValue(e.RelPath, out var d) && !d.IsDirectory).ToList();
-        var same = new System.Collections.Concurrent.ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        var same = new System.Collections.Concurrent.ConcurrentDictionary<string, bool>(PathTools.KeyComparer);
         Parallel.ForEach(pairs, new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, maxParallel), CancellationToken = ct }, s =>
         {
             var d = dst.Entries[s.RelPath];
@@ -124,10 +124,10 @@ public sealed class Planner
         };
 
         var items = new List<PlanItem>();
-        var allKeys = new HashSet<string>(src.Entries.Keys, StringComparer.OrdinalIgnoreCase);
+        var allKeys = new HashSet<string>(src.Entries.Keys, PathTools.KeyComparer);
         allKeys.UnionWith(dst.Entries.Keys);
 
-        foreach (var rel in allKeys.OrderBy(k => k, StringComparer.OrdinalIgnoreCase))
+        foreach (var rel in allKeys.OrderBy(k => k, PathTools.KeyComparer))
         {
             ct.ThrowIfCancellationRequested();
             src.Entries.TryGetValue(rel, out var s);

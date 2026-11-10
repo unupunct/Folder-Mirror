@@ -170,7 +170,7 @@ public sealed class SyncEngine
             LockedFileRetryDelayMs = options.LockedFileRetryDelayMs
         };
 
-        var upserts = new ConcurrentDictionary<string, FileState>(StringComparer.OrdinalIgnoreCase);
+        var upserts = new ConcurrentDictionary<string, FileState>(PathTools.KeyComparer);
         var removals = new ConcurrentBag<string>();
         using var abort = CancellationTokenSource.CreateLinkedTokenSource(ct);
         string? criticalMessage = null;

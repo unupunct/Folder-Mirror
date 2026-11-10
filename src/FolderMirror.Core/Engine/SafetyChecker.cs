@@ -61,7 +61,7 @@ public static class SafetyChecker
 
         // Dangerous destinations
         var dstRoot = PathTools.DriveRoot(dst) ?? "";
-        if (dst == dstRoot || dst.TrimEnd('\\', '/').Equals(dstRoot.TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase))
+        if (dst == dstRoot || PathTools.KeyComparer.Equals(PathTools.TrimSeparators(dst), PathTools.TrimSeparators(dstRoot)))
         {
             if (p.Mode == SyncMode.Mirror)
                 Add(IssueSeverity.Error, "MirrorToDriveRoot",

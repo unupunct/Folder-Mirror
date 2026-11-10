@@ -4,7 +4,7 @@ namespace FolderMirror.Core.Engine;
 
 public sealed class ScanResult
 {
-    public Dictionary<string, FileEntry> Entries { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, FileEntry> Entries { get; } = new(PathTools.KeyComparer);
     public List<string> Warnings { get; } = new();
     public List<string> StaleTempFiles { get; } = new();
     public int FileCount => Entries.Values.Count(e => !e.IsDirectory);
@@ -30,9 +30,9 @@ public static class FileScanner
             {
                 var sep = Path.DirectorySeparatorChar;
                 var norm = f.Replace('/', sep).Replace('\\', sep).Trim(sep);
-                if (rel.Equals(norm, StringComparison.OrdinalIgnoreCase)) return true;
+                if (PathTools.KeyComparer.Equals(rel, norm)) return true;
             }
-            else if (name.Equals(f, StringComparison.OrdinalIgnoreCase)) return true;
+            else if (PathTools.KeyComparer.Equals(name, f)) return true;
         }
         return false;
     }
@@ -40,6 +40,7 @@ public static class FileScanner
     public static bool FileExcluded(string name, FileAttributes attrs, SyncProfile p)
     {
         if (name.EndsWith(PathTools.TempSuffix, StringComparison.OrdinalIgnoreCase)) return true;
+        if (PathTools.IsSystemJunkFile(name)) return true;
         if (p.IgnoreHidden && (attrs & FileAttributes.Hidden) != 0) return true;
         if (p.IgnoreSystem && (attrs & FileAttributes.System) != 0) return true;
         if (p.IgnoreTemporary && IsTemporary(name)) return true;
@@ -84,6 +85,7 @@ public static class FileScanner
                     {
                         if (dirRel.Length == 0 && child.Name.Equals(PathTools.ReservedFolder, StringComparison.OrdinalIgnoreCase)) continue;
                         if (!p.IncludeSubdirectories) continue;
+                        if (PathTools.IsSystemJunkFolder(child.Name)) continue;
                         if ((attrs & FileAttributes.ReparsePoint) != 0)
                         {
                             result.Warnings.Add($"Skipped link/junction folder: {child.FullName}");
@@ -116,7 +118,7 @@ public static class FileScanner
 
         if (p.IgnoreEmptyFolders)
         {
-            var keep = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var keep = new HashSet<string>(PathTools.KeyComparer);
             foreach (var e in result.Entries.Values.Where(e => !e.IsDirectory))
             {
                 var d = Path.GetDirectoryName(e.RelPath);

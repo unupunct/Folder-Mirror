@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Builds "Folder Mirror.app" and a drag-to-install .dmg. Must run on macOS (needs sips, iconutil, codesign, hdiutil).
-#   scripts/build-mac.sh [osx-arm64|osx-x64] [version]
+#   scripts/build-mac.sh [universal|osx-arm64|osx-x64] [version]   (default: universal = one dmg for Apple silicon and Intel)
 set -euo pipefail
 
-RID="${1:-osx-arm64}"
+RID="${1:-universal}"
 VERSION="${2:-1.1.0}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/release/mac"
@@ -13,18 +13,38 @@ APP="$STAGE/Folder Mirror.app"
 case "$RID" in
   osx-arm64) ARCH="arm64" ;;
   osx-x64)   ARCH="x64" ;;
+  universal) ARCH="universal" ;;
   *) echo "Unsupported runtime identifier: $RID" >&2; exit 1 ;;
 esac
 DMG="$OUT/FolderMirror-$VERSION-macOS-$ARCH.dmg"
 
-rm -rf "$PUB" "$STAGE"
+rm -rf "$PUB" "$STAGE" "$OUT/publish-osx-arm64" "$OUT/publish-osx-x64"
 mkdir -p "$OUT" "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
-echo "==> Publishing ($RID, self-contained: no .NET install needed on the Mac)"
-dotnet publish "$ROOT/src/FolderMirror.Mac/FolderMirror.Mac.csproj" \
-  -c Release -r "$RID" --self-contained true \
-  -p:Version="$VERSION" -p:AssemblyVersion="$VERSION.0" -p:DebugType=none \
-  -o "$PUB"
+publish_rid() {
+  dotnet publish "$ROOT/src/FolderMirror.Mac/FolderMirror.Mac.csproj"     -c Release -r "$1" --self-contained true     -p:Version="$VERSION" -p:AssemblyVersion="$VERSION.0" -p:DebugType=none     -o "$2"
+}
+
+if [ "$RID" = "universal" ]; then
+  echo "==> Publishing osx-arm64 and osx-x64, then merging native binaries with lipo"
+  publish_rid osx-arm64 "$OUT/publish-osx-arm64"
+  publish_rid osx-x64 "$OUT/publish-osx-x64"
+  cp -R "$OUT/publish-osx-arm64" "$PUB"
+  merged=0
+  while IFS= read -r -d '' f; do
+    rel="${f#"$OUT/publish-osx-arm64/"}"
+    other="$OUT/publish-osx-x64/$rel"
+    if file -b "$f" | grep -q "Mach-O" && [ -f "$other" ]; then
+      lipo -create "$f" "$other" -output "$PUB/$rel"
+      merged=$((merged+1))
+    fi
+  done < <(find "$OUT/publish-osx-arm64" -type f -print0)
+  echo "    merged $merged native files into universal binaries"
+  rm -rf "$OUT/publish-osx-arm64" "$OUT/publish-osx-x64"
+else
+  echo "==> Publishing ($RID, self-contained: no .NET install needed on the Mac)"
+  publish_rid "$RID" "$PUB"
+fi
 
 cp -R "$PUB"/. "$APP/Contents/MacOS/"
 chmod +x "$APP/Contents/MacOS/FolderMirror"

@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rid: [osx-arm64, osx-x64]
+        rid: [universal]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -46,6 +46,8 @@ jobs:
         run: |
           export FOLDERMIRROR_DATA="$RUNNER_TEMP/fm-data"
           APP="release/mac/stage-${{ matrix.rid }}/Folder Mirror.app/Contents/MacOS/FolderMirror"
+          lipo -archs "$APP" | tee /dev/stderr | grep -q arm64
+          lipo -archs "$APP" | grep -q x86_64
           # unknown profile id -> exits with code 3 after opening the database
           set +e
           DOTNET_ROOT= PATH=/usr/bin:/bin "$APP" --run-profile 00000000-0000-0000-0000-000000000001 --background
@@ -53,7 +55,7 @@ jobs:
           echo "exit code: $code"
           [ "$code" = "3" ]
       - name: Capture screenshots of the packaged app (demo data only)
-        if: ${{ matrix.rid == 'osx-arm64' }}
+        if: ${{ matrix.rid == 'universal' }}
         continue-on-error: true
         run: |
           export FOLDERMIRROR_DATA="$RUNNER_TEMP/fm-shot-data"
@@ -62,7 +64,7 @@ jobs:
           "$APP" --screenshots "$PWD/release/mac/screenshots" --demo-root "$HOME/FolderMirrorDemo"
           ls -l release/mac/screenshots
       - uses: actions/upload-artifact@v4
-        if: ${{ matrix.rid == 'osx-arm64' }}
+        if: ${{ matrix.rid == 'universal' }}
         with:
           name: FolderMirror-macOS-screenshots
           path: release/mac/screenshots/*.png

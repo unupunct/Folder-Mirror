@@ -12,9 +12,13 @@ public static class PathTools
     {
         var full = Path.GetFullPath(path.Trim().Trim('"'));
         var root = Path.GetPathRoot(full) ?? "";
-        if (full.Length > root.Length) full = full.TrimEnd('\\', '/');
+        if (full.Length > root.Length) full = TrimSeparators(full);
         return full;
     }
+
+    /// <summary>On Windows both slashes are separators; on macOS/Linux a backslash is a legal filename character.</summary>
+    public static string TrimSeparators(string path) =>
+        OperatingSystem.IsWindows() ? path.TrimEnd('\\', '/') : path.TrimEnd('/');
 
     public static bool SamePath(string a, string b) =>
         string.Equals(Normalize(a), Normalize(b), Comparison);
@@ -27,9 +31,33 @@ public static class PathTools
     public static bool IsInside(string child, string parent)
     {
         var c = Normalize(child);
-        var p = Normalize(parent).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+        var p = TrimSeparators(Normalize(parent)) +Path.DirectorySeparatorChar;
         return c.StartsWith(p, Comparison) && c.Length > p.Length - 1;
     }
+
+    /// <summary>Comparer for relative-path keys. On macOS, APFS/HFS+ treat precomposed (NFC) and decomposed (NFD)
+    /// accents as the same name, so keys are compared in NFC. Elsewhere names are compared as stored.</summary>
+    public static readonly StringComparer KeyComparer = new PathKeyComparer();
+
+    sealed class PathKeyComparer : StringComparer
+    {
+        static readonly bool Nfc = OperatingSystem.IsMacOS();
+        static readonly StringComparer Inner = OperatingSystem.IsLinux() ? Ordinal : OrdinalIgnoreCase;
+        static string? N(string? s) => s != null && Nfc && !s.IsNormalized() ? s.Normalize() : s;
+        public override int Compare(string? x, string? y) => Inner.Compare(N(x), N(y));
+        public override bool Equals(string? x, string? y) => Inner.Equals(N(x), N(y));
+        public override int GetHashCode(string obj) => Inner.GetHashCode(N(obj)!);
+    }
+
+    /// <summary>OS metadata that should never be mirrored: Finder/Spotlight/Trash bookkeeping and AppleDouble files.</summary>
+    public static bool IsSystemJunkFile(string name) =>
+        name.Equals(".DS_Store", StringComparison.Ordinal) ||
+        name.Equals(".localized", StringComparison.Ordinal) ||
+        (name.Length > 2 && name.StartsWith("._", StringComparison.Ordinal));
+
+    static readonly string[] JunkFolders =
+        { ".Spotlight-V100", ".Trashes", ".fseventsd", ".TemporaryItems", ".DocumentRevisions-V100", ".MobileBackups", ".apdisk" };
+    public static bool IsSystemJunkFolder(string name) => JunkFolders.Contains(name, StringComparer.Ordinal);
 
     public static string Combine(string root, string rel) => Path.Combine(root, rel);
 
@@ -143,10 +171,25 @@ public static class ErrorTranslator
     const int PathTooLongHr = unchecked((int)0x800700CE);
     const int NotReady = unchecked((int)0x80070015);
 
-    public static bool IsDiskFull(Exception ex) => ex is IOException io && (io.HResult is DiskFull or HandleDiskFull);
-    public static bool IsLocked(Exception ex) => ex is IOException io && (io.HResult is SharingViolation or LockViolation);
+    // POSIX errno values. On Unix .NET stores the raw errno in IOException.HResult.
+    // ENOSPC and EBUSY are the same on macOS and Linux; the rest differ.
+    static bool Mac => OperatingSystem.IsMacOS();
+    static bool Posix(IOException io, params int[] errnos) => !OperatingSystem.IsWindows() && Array.IndexOf(errnos, io.HResult) >= 0;
+    const int ENOSPC = 28, EBUSY = 16, ETXTBSY = 26, EIO = 5;
+    static int EDQUOT => Mac ? 69 : 122;
+    static int ENAMETOOLONG => Mac ? 63 : 36;
+    static int[] NetErrnos => Mac
+        ? new[] { 50 /*ENETDOWN*/, 51 /*ENETUNREACH*/, 57 /*ENOTCONN*/, 60 /*ETIMEDOUT*/, 64 /*EHOSTDOWN*/, 65 /*EHOSTUNREACH*/, 70 /*ESTALE*/, 6 /*ENXIO*/, 19 /*ENODEV*/ }
+        : new[] { 100, 101, 107, 110, 112, 113, 116, 6, 19 };
+
+    public static bool IsDiskFull(Exception ex) => ex is IOException io &&
+        (io.HResult is DiskFull or HandleDiskFull || Posix(io, ENOSPC, EDQUOT));
+    public static bool IsLocked(Exception ex) => ex is IOException io &&
+        (io.HResult is SharingViolation or LockViolation || Posix(io, EBUSY, ETXTBSY));
     public static bool IsNetworkLost(Exception ex) => ex is IOException io &&
-        (io.HResult is NetworkNameDeleted or NetworkPathNotFound or NetworkBusy or NetworkUnreachable or DeviceNotConnected or NotReady);
+        (io.HResult is NetworkNameDeleted or NetworkPathNotFound or NetworkBusy or NetworkUnreachable or DeviceNotConnected or NotReady
+         || Posix(io, NetErrnos));
+    static bool IsNameTooLong(IOException io) => io.HResult == PathTooLongHr || Posix(io, ENAMETOOLONG);
 
     public static string Describe(Exception ex, string? path = null)
     {
@@ -155,14 +198,14 @@ public static class ErrorTranslator
         {
             SourceChangedException => "The file changed while it was being copied. It will be copied again on the next run." + where,
             UnauthorizedAccessException => "Access denied. Check the permissions of the file or folder, or whether it is read-only." + where,
-            PathTooLongException => "The file path is too long for Windows." + where,
+            PathTooLongException => "The file path is too long for this file system." + where,
             DirectoryNotFoundException => "A folder could not be found. It may have been moved, deleted or disconnected." + where,
             FileNotFoundException => "The file no longer exists (it was probably removed during synchronization)." + where,
             OperationCanceledException => "The operation was cancelled.",
             IOException io when IsDiskFull(io) || io.Message.Contains("No space left", StringComparison.OrdinalIgnoreCase) => "There is not enough free space on the destination drive." + where,
             IOException io when IsLocked(io) => "The file is currently in use by another program and could not be copied." + where,
             IOException io when IsNetworkLost(io) => "The network location or drive became unavailable. Check the connection." + where,
-            IOException io when io.HResult == PathTooLongHr => "The file path is too long for Windows." + where,
+            IOException io when IsNameTooLong(io) => "The file path is too long for this file system." + where,
             IOException io => "An input/output error occurred: " + io.Message + where,
             _ => ex.Message + where
         };
