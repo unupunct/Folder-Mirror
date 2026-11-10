@@ -325,15 +325,25 @@ public class EngineTests
     public async Task UnavailableExternalDrive_IsDetected()
     {
         using var sb = new Sandbox();
-        var used = DriveInfo.GetDrives().Select(d => char.ToUpper(d.Name[0])).ToHashSet();
-        var free = Enumerable.Range('D', 'Z' - 'D' + 1).Select(c => (char)c).First(c => !used.Contains(c));
-        sb.Profile.DestinationPath = $@"{free}:\Backup";
+        string missingBackup, missingPhotos;
+        if (OperatingSystem.IsWindows())
+        {
+            var used = DriveInfo.GetDrives().Select(d => char.ToUpper(d.Name[0])).ToHashSet();
+            var free = Enumerable.Range('D', 'Z' - 'D' + 1).Select(c => (char)c).First(c => !used.Contains(c));
+            missingBackup = $@"{free}:\Backup"; missingPhotos = $@"{free}:\Photos";
+        }
+        else
+        {
+            var vol = "/Volumes/FolderMirrorMissing" + Guid.NewGuid().ToString("N")[..6];
+            missingBackup = vol + "/Backup"; missingPhotos = vol + "/Photos";
+        }
+        sb.Profile.DestinationPath = missingBackup;
         sb.Write(sb.Src, "a.txt", "a");
         var plan = await sb.Plan();
         Assert.Contains(plan.Issues, i => i.Code == "DestinationDriveUnavailable");
         await Assert.ThrowsAsync<SyncBlockedException>(() => sb.Engine().ExecuteAsync(plan, new ExecuteOptions(), null, CancellationToken.None));
 
-        sb.Profile.DestinationPath = sb.Dst; sb.Profile.SourcePath = $@"{free}:\Photos";
+        sb.Profile.DestinationPath = sb.Dst; sb.Profile.SourcePath = missingPhotos;
         var plan2 = await sb.Plan();
         Assert.Contains(plan2.Issues, i => i.Code == "SourceDriveUnavailable");
     }
